@@ -1,0 +1,22 @@
+{
+  "name": "ticket-indexer",
+  "version": "0.0.1",
+  "description": "A plugin for the bcash node indexing tickets.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hansekontor/ticket-indexer.git"
+  },
+  "author": "Olav",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hansekontor/ticket-indexer/issues"
+  },
+  "homepage": "https://github.com/hansekontor/ticket-indexer#readme",
+  "dependencies": {
+    "bcash": "github:badger-cash/bcash"
+  }
+}

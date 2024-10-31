@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/hansekontor/ticket-indexer#readme",
   "dependencies": {
-    "bcash": "github:badger-cash/bcash"
+    "bcash": "badger-cash/bcash"
   }
 }

@@ -17,6 +17,25 @@
   },
   "homepage": "https://github.com/hansekontor/ticket-indexer#readme",
   "dependencies": {
-    "bcash": "badger-cash/bcash"
+    "bcash": "badger-cash/bcash",
+    "bcrypto": "^5.5.2",
+    "bdb": "^1.6.0",
+    "bevent": "^0.1.6",
+    "bfile": "^0.2.3",
+    "blgr": "^0.2.1",
+    "blru": "^0.1.8",
+    "bmutex": "^0.1.7",
+    "bsert": "^0.0.13",
+    "buffer-map": "^0.0.8",
+    "bufio": "^1.2.2",
+    "bval": "^0.1.8",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "http-errors": "^2.0.0",
+    "http-proxy-middleware": "^3.0.3",
+    "install": "^0.13.0",
+    "ws": "^8.18.0"
   }
 }

@@ -1,0 +1,17 @@
+NODE_ENV = development
+
+HOSTNAME = localhost
+
+SSL_PRIVKEY = /etc/letsencrypt/live/yourdomain/privkey.pem
+SSL_FULLCHAIN = /etc/letsencrypt/live/yourdomain/fullchain.pem
+
+#If commented out, defaults to HTTP: 8000, HTTPS: 3000
+#HTTPS_PORT = 443
+#HTTP_PORT = 80
+
+#Redis settings (password generally only needed for remote instances)
+REDIS_HOST = 127.0.0.1
+REDIS_PORT = 6379
+REDIS_DB = 0
+#REDIS_PASSWORD = password
+

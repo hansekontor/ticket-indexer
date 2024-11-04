@@ -128,25 +128,13 @@ bdb@^1.6.0:
   dependencies:
     bsert "~0.0.10"
 
-bevent@^0.1.6:
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/bevent/-/bevent-0.1.6.tgz#31b4b366221e8a05c9af1267e782f56247aaab1b"
-  integrity sha512-vu1MYZIbZhz8s4/QDuqJ06L8BloELnMJxf/bGfp5ifqNpKpdCvgDw3ymsyzu27JJinDiGvx775V5NnTmWR7tFA==
-  dependencies:
-    bsert "~0.0.12"
-
-"bevent@git+https://github.com/bcoin-org/bevent.git#semver:~0.1.5":
+bevent@^0.1.6, "bevent@git+https://github.com/bcoin-org/bevent.git#semver:~0.1.5":
   version "0.1.6"
   resolved "git+https://github.com/bcoin-org/bevent.git#b228729a129987e0ef862d635b15f953b98e68c4"
   dependencies:
     bsert "~0.0.12"
 
-bfile@^0.2.3:
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/bfile/-/bfile-0.2.3.tgz#13e555e941b78f657d55baa96b966228a125b835"
-  integrity sha512-BhbmCLqDC+u8rPSeB/I8bRC8luQoUt+wD326CECXYXtE5GyTWL/q/OkNp58aH7XEREguEItvqM18s9vXLvg6fw==
-
-"bfile@git+https://github.com/bcoin-org/bfile.git#semver:~0.2.1":
+bfile@^0.2.3, "bfile@git+https://github.com/bcoin-org/bfile.git#semver:~0.2.1":
   version "0.2.3"
   resolved "git+https://github.com/bcoin-org/bfile.git#c13235d04974f0fa5a487fdbaf74611523e2f4e6"
 
@@ -191,14 +179,7 @@ blgr@^0.2.1:
   dependencies:
     bsert "~0.0.10"
 
-blru@^0.1.8:
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/blru/-/blru-0.1.8.tgz#7a1d5298e1fe35653e366132fa87ca8076151f12"
-  integrity sha512-9KsgRzBHx4GOJ48bRy0IZf42+f3nAhgAeeuWX5KBditHVqnCFL0ownd1QRr0aJVot7qlKEUYGPfM/tGHW6A3zw==
-  dependencies:
-    bsert "~0.0.12"
-
-"blru@git+https://github.com/bcoin-org/blru.git#semver:~0.1.6":
+blru@^0.1.8, "blru@git+https://github.com/bcoin-org/blru.git#semver:~0.1.6":
   version "0.1.8"
   resolved "git+https://github.com/bcoin-org/blru.git#82362ae8cbf6cc7984f4158a430392e21314dd6c"
   dependencies:
@@ -210,14 +191,7 @@ blru@^0.1.8:
   dependencies:
     bsert "~0.0.12"
 
-bmutex@^0.1.7:
-  version "0.1.7"
-  resolved "https://registry.yarnpkg.com/bmutex/-/bmutex-0.1.7.tgz#343d4ad3a1251562fc32ab61c1b5b13073a6ebe8"
-  integrity sha512-czuDM58Y1LCT7V0t9NHd0j4l7A3IBovXNvWrmmCcdKsulEgGcahTGqrWNidvWFv2dhiuvQmUzaLf6AT00+FLFw==
-  dependencies:
-    bsert "~0.0.12"
-
-"bmutex@git+https://github.com/bcoin-org/bmutex.git#semver:~0.1.6":
+bmutex@^0.1.7, "bmutex@git+https://github.com/bcoin-org/bmutex.git#semver:~0.1.6":
   version "0.1.7"
   resolved "git+https://github.com/bcoin-org/bmutex.git#7c1845e1baa68734535e8bb17ec21ab5e290c43d"
   dependencies:
@@ -282,12 +256,7 @@ bs58check@^3.0.1:
     "@noble/hashes" "^1.2.0"
     bs58 "^5.0.0"
 
-bsert@^0.0.13:
-  version "0.0.13"
-  resolved "https://registry.yarnpkg.com/bsert/-/bsert-0.0.13.tgz#60bfe52b70fc920245496ba5ecab33f121749918"
-  integrity sha512-gYzSj8I2lDTKvl4aRSYs2CZIpeJugq7RjGhLRG+Jl//gEW5B2u1MKB6exVCL09FqYj6JRQAAgRwQHMOWvr7A8A==
-
-"bsert@git+https://github.com/chjj/bsert.git#semver:~0.0.10", bsert@~0.0.10, bsert@~0.0.12, bsert@~0.0.13:
+bsert@^0.0.13, "bsert@git+https://github.com/chjj/bsert.git#semver:~0.0.10", bsert@~0.0.10, bsert@~0.0.12, bsert@~0.0.13:
   version "0.0.13"
   resolved "git+https://github.com/chjj/bsert.git#9707106b6cffcfbe7659c8cae77e8c2e73ab13b5"
 
@@ -326,12 +295,7 @@ bstring@^0.3.8:
   version "0.1.5"
   resolved "git+https://github.com/bcoin-org/btcp.git#4ea7e1ce5a43cd5348152c007aff76a419190a3a"
 
-buffer-map@^0.0.8:
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/buffer-map/-/buffer-map-0.0.8.tgz#3cc0b9e3f2a148d45c1f093721e0fe5439615a26"
-  integrity sha512-RlxrBAk98CqJdwSPgXOWYbC85xuq4H4vyGmW68BJ9IAGkCHQKC+flavb+d3LGxiDluczbTG8NhgKBRllpFGurA==
-
-"buffer-map@git+https://github.com/chjj/buffer-map.git#semver:~0.0.7":
+buffer-map@^0.0.8, "buffer-map@git+https://github.com/chjj/buffer-map.git#semver:~0.0.7":
   version "0.0.8"
   resolved "git+https://github.com/chjj/buffer-map.git#e3523cf8632ea13348f87b9a506496995ca73939"
 
@@ -352,14 +316,7 @@ bufio@^1.2.2:
     brq "~0.1.7"
     bsert "~0.0.10"
 
-bval@^0.1.8:
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/bval/-/bval-0.1.8.tgz#8d1cdefeb2e20bf2d3690f76daa63b7ad65b88d3"
-  integrity sha512-38WQyq94sgKaJbHSmkOwZqba6Ac0KIKPO0SMDNg/mCcwUos2NIrMg5Bb2LkzIer+RzS186IYusNeSrJrKdaqhA==
-  dependencies:
-    bsert "~0.0.10"
-
-"bval@git+https://github.com/bcoin-org/bval.git#semver:~0.1.6":
+bval@^0.1.8, "bval@git+https://github.com/bcoin-org/bval.git#semver:~0.1.6":
   version "0.1.8"
   resolved "git+https://github.com/bcoin-org/bval.git#f9c44d510bbc5bcc13cbd4b67e9704a24cc5ec0e"
   dependencies:

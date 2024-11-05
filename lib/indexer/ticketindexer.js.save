@@ -9,7 +9,7 @@ const bdb = require('bdb');
 const bcash = require('bcash');
 const {
 	Indexer,
-    BlockMeta, 
+    	BlockMeta, 
 	Block, 
 	CoinView, 
 } = bcash;
@@ -18,15 +18,12 @@ const assert = require('assert');
 const bio = require('bufio');
 
 const layout = require('./layout');
-const { 
-	Count, 
-	BlockRecord 
-} = require('./records');
+const { Count, BlockRecord } = require('./records');
 const validateIssueTx = require('./validation');
 /*
  *	Address
- *  M[addr-prefix][addr-hash][height][index] -> dummy (issue tx by address)
- * 	N[addr-prefix][addr-hash][height][index] -> dummy (redeem tx by address)
+ *  AI[addr-prefix][addr-hash][height][index] -> dummy (issue tx by address)
+ * 	AR[addr-prefix][addr-hash][height][index] -> dummy (redeem tx by address)
  *  C[height][index] -> hash (tx hash by height and index)
  *  c[hash]-> height + index (tx height and index by hash)
  * 
@@ -39,7 +36,7 @@ const validateIssueTx = require('./validation');
  * 	e[redeem hash] -> hash index
  * 	E[hash index] -> redeem hash
  * 	r[issue hash index] -> redeem hash index
- * 	P[height] -> redeem hash index
+ * 	R[height] -> redeem hash index
  * 	
  * 	Block Header
  * 	B[block hash] -> block header
@@ -51,16 +48,16 @@ const validateIssueTx = require('./validation');
 
 // add ticketindex layout 
 Object.assign(layout, {
-	M: bdb.key('M', ['uint8', 'hash', 'uint32', 'uint32']),
-	N: bdb.key('N', ['uint8', 'hash', 'uint32', 'uint32']),
+	AI: bdb.key('A', ['uint8', 'hash', 'uint32', 'uint32']),
+	AR: bdb.key('A', ['uint8', 'hash', 'uint32', 'uint32']),
 	C: bdb.key('C', ['uint32', 'uint32']),
 	c: bdb.key('c', ['hash256']),
 	D: bdb.key('D', ['uint32']),
 	d: bdb.key('d', ['hash256']),
 	I: bdb.key('I', ['uint32']),
 	E: bdb.key('E', ['uint32']),
-	e: bdb.key('e', ['hash256']),
-	P: bdb.key('P', ['uint32']),
+	e: bdb.key('r', ['hash256']),
+	R: bdb.key('R', ['uint32']),
 	r: bdb.key('r', ['uint32']),
 	B: bdb.key('B', ['hash256'])
   });
@@ -71,7 +68,7 @@ Object.assign(layout, {
  * @returns {Buffer}
  */
 function incrementUInt32BE (hashIndBuf) {
-console.log("incrementUINT32BE with hashIndBuf", hashIndBuf);
+	console.log("incrementUInt32BE called with hashIndBuf", hashIndBuf);
 	assert(hashIndBuf.length == 4, 'Buffer length must be 4 bytes')
 
 	const newNumData = Buffer.alloc(4);
@@ -81,23 +78,6 @@ console.log("incrementUINT32BE with hashIndBuf", hashIndBuf);
 	hashIndNum.writeBE(newNumData, -4);
 	return newNumData
 }
-
-/**
- * 32-bit big endian to Number (int)
- * @param {Buffer} hashIndBuf
- * @returns {Number}
- */
-function uInt32BEToInt (hashIndBuf) {
-console.log("uInt32ToInt with hashIndBuf", hashIndBuf);
-	assert(hashIndBuf.length == 4, 'Buffer length must be 4 bytes');
-  
-	const hashIndInt = U64.readBE(hashIndBuf, -4).toInt();
-	assert(typeof hashIndInt == 'number');
-  
-	return hashIndInt;
-  }
-
-
 
 /**
  * TicketIndexer
@@ -136,8 +116,15 @@ class TicketIndexer extends Indexer {
 			return;
 		}
 
+		// dev condition to reduce logs 
+		//if (height !== 866629) {
+		//	return;
+		//}
+
 		const bblock = block.txs[0]._block ? block : Block.fromRaw(block.toRaw());
-		let issuebrecord, redeembrecord;
+
+		const issueHashIndexToAdd = [];
+		const redeemHashIndexToAdd = [];
 
 		// iterate through block's txs
         for (let i = 0; i < bblock.txs.length; i++) {
@@ -147,129 +134,115 @@ class TicketIndexer extends Indexer {
 			const validRedeemTx = await this.validateRedeemTx(tx);
 
 			if (validRedeemTx) {
+				console.log("found valid redeem tx", tx.hash());
 				// index redeem hash 
-				const lastHashIndex = await this.getLastHashIndex(meta.height, "redeem");
-				redeembrecord = new BlockRecord({
+				const lastHashIndex = await this.getLastHashIndex(meta.height);
+				const brecord = new BlockRecord({
 					start: lastHashIndex,
 					last: lastHashIndex
 				});
 				  
 				const redeemHash = tx.hash();
-				const redeemHashIndex = await this.getHashIndex(redeemHash, redeembrecord);
-				const redeemHashIndexInt = uInt32BEToInt(redeemHashIndex);
-				if (redeemHashIndexInt > redeembrecord.last) {
-					redeembrecord.last = redeemHashIndexInt;
-				}
-			
-				const issueHash = tx.inputs[0].prevout.hash;
-				const issueHashIndex = await this.getHashIndex(issueHash, redeembrecord);
-				const issueHashIndexInt = uInt32BEToInt(issueHashIndex);
+				const redeemHashIndex = this.getHashIndex(redeemHash, brecord);
 
-				await this.db.put(layout.E.encode(redeemHashIndexInt), redeemHash);
+				const issueHash = tx.inputs[0].prevout.hash;
+				const issueHashIndex = this.getHashIndex(issueHash, brecord);
+
+
+				await this.db.put(layout.E.encode(redeemHashIndex), hash);
 				await this.db.put(layout.e.encode(redeemHash), redeemHashIndex);
-				await this.db.put(layout.r.encode(issueHashIndexInt), redeemHashIndex);
+				await this.db.put(layout.R.encode(height), redeemHashIndex);
+
+				//await this.db.put(layout.R.encode(issueHashIndex), redeemIndex);
+				redeemHashIndexToAdd.push(redeemHashIndex);
 
 				// index redeem hash by address
 				const count = new Count(height, i);
 				let hasAddress = false;
-				// this is false:
-				const payoutAddresses = tx.getAddresses(view);
-console.log("redeem payoutAddresses", payoutAddresses);
+				const payoutAddresses = validIssueTx.addresses;
 				for (const addr of payoutAddresses) {
-console.log("addr for N", addr);
-					const prefix = addr.getPrefix(this.network.type);
-console.log("prefix for N", prefix);			
+					const prefix = addr.getPrefix(this.network);
+			
 					if (prefix < 0)
-						continue;
+					continue;
 			
 					const addrHash = addr.getHash();
-console.log("index put N");
-					this.db.put(layout.N.encode(prefix, addrHash, height, i), null);
-console.log("index del M");
-					// delete issue hash by address
-        	                        await this.db.del(layout.M.encode(prefix, addrHash, height, i));
+			
+					this.db.put(layout.AR.encode(prefix, addrHash, height, i), null);
+
 					hasAddress = true;
 				}
 			
 				if (hasAddress) {
-console.log("index address helpers");
-// replace hashes by hash indices
-					await this.db.put(layout.C.encode(height, i), redeemHash);
-					await this.db.put(layout.c.encode(redeemHash), count.toRaw());
+					await this.db.put(layout.C.encode(height, i), hash);
+					await this.db.put(layout.c.encode(hash), count.toRaw());
 				}
 
-				// delete issue hash
-console.log("index del D");
-				await this.db.del(layout.D.encode(issueHashIndexInt));
-console.log("index del d");
+				// delete issue hash by address
+				await this.db.del(layout.AI.encode(prefix, addrHash, issueHeight, issueIndex));
+				await this.db.del(layout.D.encode(issueHashIndex))
 				await this.db.del(layout.d.encode(issueHash))
 			} else {
 				const validIssueTx = await validateIssueTx(tx);
 				if (!validIssueTx) {
 					console.log("Invalid Issue Tx");
 					continue;
+				} else {
+					console.log("found valid issue tx", tx.hash());
 				}
-						
-				const lastHashIndex = await this.getLastHashIndex(meta.height, "issue");
-				const issuebrecord = new BlockRecord({
+
+				const lastHashIndex = await this.getLastHashIndex(meta.height);
+console.log("lastHashIndex", lastHashIndex);
+				const brecord = new BlockRecord({
 					start: lastHashIndex,
 					last: lastHashIndex
 				});
 				  
-				const issueHash = tx.hash();
-				const issueHashIndex = await this.getHashIndex(issueHash, issuebrecord);
-				const issueHashIndexInt = uInt32BEToInt(issueHashIndex);
-				if (issueHashIndexInt > issuebrecord.last) {
-					issuebrecord.last = issueHashIndexInt;
-				}
-
-console.log("index put D, issueHashIndex", issueHashIndex);
-				await this.db.put(layout.D.encode(issueHashIndexInt), issueHash);
-console.log("index put d");
-				await this.db.put(layout.d.encode(issueHash), issueHashIndex);
+				const hash = tx.hash();
+				const hashIndex = await this.getHashIndex(hash, brecord);
+//console.log("D hashIndex", hashIndex);
+				await this.db.put(layout.D.encode(hashIndex), hash);
+//console.log("d hash", hash);
+				await this.db.put(layout.d.encode(hash), hashIndex);
+//console.log("I height", height);
+				// await this.db.put(layout.I.encode(height), hashIndex);
+				issueHashIndexToAdd.push(hashIndex);
 
 				// index issue hash by address
 				const count = new Count(height, i);
-console.log("count", count);
 				let hasAddress = false;
-//console.log("validIssueTx", validIssueTx);
-				const payoutAddresses = validIssueTx.addresses.map(item => item.address);
-//console.log("payoutAddresses", payoutAddresses);
+				const payoutAddresses = validIssueTx.addresses;
 				for (const addr of payoutAddresses) {
-console.log("addr for M", addr);
 				  const prefix = addr.getPrefix(this.network);
-console.log("prefix for M", prefix);		  
+		  
 				  if (prefix < 0)
 					continue;
 		  
 				  const addrHash = addr.getHash();
-console.log("index put M");		  
-				  this.db.put(layout.M.encode(prefix, addrHash, height, i), null);
+		  
+//console.log("AI prefix,addrHash,height,i", prefix,addrHash,height,i);
+				  this.db.put(layout.AI.encode(prefix, addrHash, height, i), null);
 
 				  hasAddress = true;
 				}
 		  
 				if (hasAddress) {
-				  this.db.put(layout.C.encode(height, i), issueHash);
-				  this.db.put(layout.c.encode(issueHash), count.toRaw());
+//console.log("C height,i", height,i);
+				  this.db.put(layout.C.encode(height, i), hash);
+//console.log("c hash", hash);
+				  this.db.put(layout.c.encode(hash), count.toRaw());
 				}
 			}				
 		}			
 		
-		// index hash indices by block
-		if (issuebrecord) {
-			console.log("index I");
-			this.db.put(layout.I.encode(meta.height), issuebrecord.toRaw());
-		}
-		if (redeembrecord) {
-			console.log("index P");
-			this.db.put(layout.P.encode(meta.height), redeembrecord.toRaw());
-		}
+		// index hash indices
+		const get
 
 		// index block header 
 		const blockHeader = bblock.toHeaders();
-		console.log("index B");
-		this.db.put(layout.B.encode(bblock.hash()), blockHeader.toRaw());		
+		const rawBlockHeader = blockHeader.toRaw();
+//console.log("B bblock.hash()", bblock.hash());
+		await this.db.put(layout.B.encode(bblock.hash()), rawBlockHeader);
     }
   
     /**
@@ -299,26 +272,21 @@ console.log("index put M");
 	/**
    * Get last transaction hash index used in the most recently indexed block
    * @param {Number} currentHeight height of current block being indexed
-   * @param {String} type - either "issue" or "redeem" type to access relevant db
    * @returns {Promise} - Returns UInt32 buffer representing last hash index
    */
-	async getLastHashIndex(height, type) {
-		assert(type == 'issue' || type == 'redeem', "type must be either 'issue' or 'redeem'");
-
+	async getLastHashIndex(height) {
+console.log("getLastHashIndex() with height", height);
 		const prevHeight = height && height > 0 ? height - 1 : 0;
-		let prevBlockDb;
-		if (type === 'issue')
-			prevBlockDb = await this.db.get(layout.I.encode(prevHeight));
-		else
-			prevBlockDb = await this.db.get(layout.P.encode(prevHeight));
-
+console.log("prevHeight", prevHeight);
+		const prevBlockDb = await this.db.get(layout.I.encode(prevHeight));
+console.log("prevBlockDb", prevBlockDb);
 		if (!prevBlockDb)
 		  return Buffer.alloc(4, 0x00);
 	
 		const prevBlockRecord = BlockRecord.fromRaw(prevBlockDb);
+console.log("prevBlockRecord", prevBlockRecord);
 		return prevBlockRecord.last
 	}
-
 
 	/**
 	 * Get new hash index or already existent one
@@ -327,15 +295,19 @@ console.log("index put M");
 	 * @returns 
 	 */
 	async getHashIndex(hash, brecord) {
-console.log("getHashIndex() with hash", hash, "brecord", brecord);
+console.log("getHashIndex called with hash", hash, "brecord", brecord);
 		// Check if hash index is already in db
 		const hashIndex = await this.db.get(layout.d.encode(hash));
 		// If exists, return the int. overwrite/replace if out of bounds
-		if(hashIndex) {
-			if (uInt32BEToInt(hashIndex) <= uInt32BEToInt(brecord.start))
-			return hashIndex;
+		if (hashIndex) {
+			console.log("hashIndex exists", hashIndex);
+			if (uInt32BEToInt(hashIndex) <= uInt32BEToInt(brecord.start)) {
+				console.log("condition met");
+				return hashIndex;
+			}
 		}
 		// If it doesn't exist, increment last used index and return value
+		console.log("hashIndex does not exist");
 		return incrementUInt32BE(brecord.last);
 	}
 

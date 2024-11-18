@@ -45,8 +45,8 @@ class Server {
 		 * Handle Websocket Connections
 		 */
 
-		const wss = new WebSocket.Server({ server });
-		wss.on('connection', wsController(ticketIndexer));
+		// const wss = new WebSocket.Server({ server });
+		// wss.on('connection', wsController(ticketIndexer));
 
 		/**
 		 * Listen on provided port, on all network interfaces.

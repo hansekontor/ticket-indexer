@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+
+require('dotenv').config()
+var Util = require('../lib/util')
+var Queue = require('bee-queue')
+var queue = new Queue('webhook',{
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT),
+    db: parseInt(process.env.REDIS_DB),
+    options: {}
+  },
+  activateDelayedJobs: true
+});
+
+queue.on('ready', function () {
+  queue.process(async function (job, done) {
+    let tried = job.options.stacktraces.length
+    let retries = job.options.retries
+    console.log('processing job ' + job.id);
+    console.log('Tried: '+tried, "Left: "+retries)
+    //console.log(job.data.postDataObj)
+    let response = await Util.callWebhook(job.data.url, job.data.postDataObj)
+    if(response == 200) {
+      console.log('Job Succeeded')
+      return response
+    } else {
+      console.log('Job Failed. Will retry')
+      throw new Error()
+    }
+  })
+
+  console.log('processing jobs...');
+})
+
+queue.on('stalled', (jobId) => {
+  console.log(`Job ${jobId} stalled and will be reprocessed`)
+})

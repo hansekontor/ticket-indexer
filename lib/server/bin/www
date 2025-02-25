@@ -1,0 +1,142 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../../.env')});
+var App = require('../app');
+var debug = require('debug')('express-project:server');
+var https = require('https');
+var http = require('http');
+var fs = require('fs')
+const WebSocket = require('ws');
+const wsController = require('../controllers/wsController')
+
+
+class Server {
+  	constructor(ticketIndexer) {
+		ticketIndexer.db.init();
+		var app = App(ticketIndexer);
+
+		/**
+		 * Get port from environment and store in Express and create HTTPS server
+		 */
+		const isDeveloperMode = process.env.NODE_ENV === "development";
+
+		var httpPort = normalizePort(process.env.HTTP_PORT || '8000');
+		var httpsPort = normalizePort(process.env.HTTPS_PORT || '3000');
+		var port = isDeveloperMode ? httpPort : httpsPort;
+		app.set('port', port);
+
+		let server;
+		if (isDeveloperMode) {
+			server = http.createServer(app)
+		} else {
+			const httpsOptions = {
+				key: fs.readFileSync(process.env.SSL_PRIVKEY),
+				cert: fs.readFileSync(process.env.SSL_FULLCHAIN)
+			};  
+			server = https.createServer(httpsOptions, app);
+		}
+
+		/**
+		 * Handle Websocket Connections
+		 */
+
+		// const wss = new WebSocket.Server({ server });
+		// wss.on('connection', wsController(ticketIndexer));
+
+		/**
+		 * Listen on provided port, on all network interfaces.
+		 */
+
+		/**
+		 * Event listener for HTTPS server "listening" event.
+		 */
+
+		function onListening() {
+			var addr = server.address();
+			var bind = typeof addr === 'string'
+				? 'pipe ' + addr
+				: 'port ' + addr.port;
+			debug('Listening on ' + bind);
+		}
+
+		
+		server.listen(port);
+		server.on('error', onError);
+		server.on('listening', onListening);
+		console.log("Starting Express Server")
+
+
+		/**
+		 * Redirect GET from http to https
+		 */
+
+		// var http = require('http');
+		// http.createServer(function (req, res) {
+		//   try {
+		//     let host = req.headers['host'].split(':')
+		//     res.writeHead(307, { "Location": "https://" + host[0] +":"+ port + req.url });
+		//   } catch (err) {
+		//     res.writeHead(307, { "Location": "https://" + process.env.HOSTNAME });
+		//   }
+		//     res.end();
+		// }).listen(httpPort);
+
+
+	}
+}
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+	var port = parseInt(val, 10);
+
+	if (isNaN(port)) {
+		// named pipe
+		return val;
+	}
+
+	if (port >= 0) {
+		// port number
+		return port;
+	}
+
+	return false;
+}
+
+/**
+ * Event listener for HTTPS server "error" event.
+ */
+
+function onError(error) {
+	if (error.syscall !== 'listen') {
+		throw error;
+	}
+
+  var bind = typeof port === 'string'
+		? 'Pipe ' + port
+		: 'Port ' + port;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+	case 'EACCES':
+		console.error(bind + ' requires elevated privileges');
+		process.exit(1);
+		break;
+	case 'EADDRINUSE':
+		console.error(bind + ' is already in use');
+		process.exit(1);
+		break;
+	default:
+		throw error;
+  }
+}
+
+
+module.exports = Server;

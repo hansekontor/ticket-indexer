@@ -1,6 +1,6 @@
 # Ticket Indexer for bcash node
-[bcash node](https://github.com/badger-cash/bcash)
-A "Ticket" contains two transactions: "issue" and "redeem".
+
+This indexer is built as a plugin for the [bcash node](https://github.com/badger-cash/bcash). It indexes tickets according to the [SLP Block Lotto Specification](https://github.com/badger-cash/block-lotto-specification).
 
 ## Indexed Data
 
@@ -10,7 +10,7 @@ A "Ticket" contains two transactions: "issue" and "redeem".
 
 ### Redeem Tx Hash - contains issue ticket Tx in signature
 * By issue ticket tx hash
-* By block number (also select by range for jackpots)
+* By block number (also by range of blocks)
 * By address (player and affiliate are in same table)
 
 ### Block Header

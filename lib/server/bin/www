@@ -25,9 +25,9 @@ class Server {
 		 */
 		const isDeveloperMode = process.env.NODE_ENV === "development";
 
-		var httpPort = normalizePort(process.env.HTTP_PORT || '8000');
-		var httpsPort = normalizePort(process.env.HTTPS_PORT || '3000');
-		var port = isDeveloperMode ? httpPort : httpsPort;
+		const httpPort = normalizePort(process.env.HTTP_PORT || '8000');
+		const httpsPort = normalizePort(process.env.HTTPS_PORT || '3000');
+		const port = isDeveloperMode ? httpPort : httpsPort;
 		app.set('port', port);
 
 		let server;
@@ -64,7 +64,35 @@ class Server {
 			debug('Listening on ' + bind);
 		}
 
-		
+		/**
+		 * Event listener for HTTPS server "error" event.
+		 */
+
+		function onError(error) {
+			if (error.syscall !== 'listen') {
+				throw error;
+			}
+
+			var bind = typeof port === 'string'
+					? 'Pipe ' + port
+					: 'Port ' + port;
+
+			// handle specific listen errors with friendly messages
+			switch (error.code) {
+				case 'EACCES':
+					console.error(bind + ' requires elevated privileges');
+					process.exit(1);
+					break;
+				case 'EADDRINUSE':
+					console.error(bind + ' is already in use');
+					process.exit(1);
+					break;
+				default:
+					throw error;
+			}
+		}
+
+
 		server.listen(port);
 		server.on('error', onError);
 		server.on('listening', onListening);
@@ -109,34 +137,5 @@ function normalizePort(val) {
 
 	return false;
 }
-
-/**
- * Event listener for HTTPS server "error" event.
- */
-
-function onError(error) {
-	if (error.syscall !== 'listen') {
-		throw error;
-	}
-
-  var bind = typeof port === 'string'
-		? 'Pipe ' + port
-		: 'Port ' + port;
-
-  // handle specific listen errors with friendly messages
-  switch (error.code) {
-	case 'EACCES':
-		console.error(bind + ' requires elevated privileges');
-		process.exit(1);
-		break;
-	case 'EADDRINUSE':
-		console.error(bind + ' is already in use');
-		process.exit(1);
-		break;
-	default:
-		throw error;
-  }
-}
-
 
 module.exports = Server;

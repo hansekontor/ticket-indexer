@@ -5,7 +5,7 @@
  */
 
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../../.env')});
+const ENV = require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
 var App = require('../app');
 var debug = require('debug')('express-project:server');
 var https = require('https');
@@ -16,17 +16,15 @@ const wsController = require('../controllers/wsController')
 
 
 class Server {
-  	constructor(ticketIndexer) {
-		ticketIndexer.db.init();
-		var app = App(ticketIndexer);
+  	constructor(indexer) {
+		indexer.db.init();
+		var app = App(indexer);
 
-		/**
-		 * Get port from environment and store in Express and create HTTPS server
-		 */
-		const isDeveloperMode = process.env.NODE_ENV === "development";
-
-		const httpPort = normalizePort(process.env.HTTP_PORT || '8000');
-		const httpsPort = normalizePort(process.env.HTTPS_PORT || '3000');
+		// get server properties from environment variables
+		const { APP_ENV, HTTP_PORT, HTTPS_PORT, SSL_PRIVKEY, SSL_FULLCHAIN, HOSTNAME } = ENV.parsed;
+		const isDeveloperMode = APP_ENV === "development";
+		const httpPort = normalizePort(HTTP_PORT || '8000');
+		const httpsPort = normalizePort(HTTPS_PORT || '3000');
 		const port = isDeveloperMode ? httpPort : httpsPort;
 		app.set('port', port);
 
@@ -35,8 +33,8 @@ class Server {
 			server = http.createServer(app)
 		} else {
 			const httpsOptions = {
-				key: fs.readFileSync(process.env.SSL_PRIVKEY),
-				cert: fs.readFileSync(process.env.SSL_FULLCHAIN)
+				key: fs.readFileSync(SSL_PRIVKEY),
+				cert: fs.readFileSync(SSL_FULLCHAIN)
 			};  
 			server = https.createServer(httpsOptions, app);
 		}
@@ -46,7 +44,7 @@ class Server {
 		 */
 
 		// const wss = new WebSocket.Server({ server });
-		// wss.on('connection', wsController(ticketIndexer));
+		// wss.on('connection', wsController(indexer));
 
 		/**
 		 * Listen on provided port, on all network interfaces.
@@ -74,8 +72,8 @@ class Server {
 			}
 
 			var bind = typeof port === 'string'
-					? 'Pipe ' + port
-					: 'Port ' + port;
+				? 'Pipe ' + port
+				: 'Port ' + port;
 
 			// handle specific listen errors with friendly messages
 			switch (error.code) {
@@ -91,7 +89,6 @@ class Server {
 					throw error;
 			}
 		}
-
 
 		server.listen(port);
 		server.on('error', onError);
@@ -109,7 +106,7 @@ class Server {
 		//     let host = req.headers['host'].split(':')
 		//     res.writeHead(307, { "Location": "https://" + host[0] +":"+ port + req.url });
 		//   } catch (err) {
-		//     res.writeHead(307, { "Location": "https://" + process.env.HOSTNAME });
+		//     res.writeHead(307, { "Location": "https://" + HOSTNAME });
 		//   }
 		//     res.end();
 		// }).listen(httpPort);

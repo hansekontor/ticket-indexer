@@ -1,4 +1,5 @@
-NODE_ENV = development
+NODE_ENV = production
+APP_ENV = development
 
 HOSTNAME = localhost
 
@@ -12,6 +13,9 @@ SSL_FULLCHAIN = /etc/letsencrypt/live/yourdomain/fullchain.pem
 #Redis settings (password generally only needed for remote instances)
 REDIS_HOST = 127.0.0.1
 REDIS_PORT = 6379
-REDIS_DB = 0
+REDIS_DB = 1
 #REDIS_PASSWORD = password
+
+# API_KEY is required to use rollback
+API_KEY =
 
